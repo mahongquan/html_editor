@@ -108,20 +108,35 @@ function HtmlEditor (props){
     setState((state)=>({...state, html: content}));
   };
   const open_click = () => {
-    ipcRenderer.send("open", {
+    var options ={
         defaultPath: path.resolve('./css_examples'),
         properties: ['openFile'],
         filters: [{ name: '*.html', extensions: ['html'] }],
-    });
-    ipcRenderer.once('open_res', (e,res) => {
-      console.log(e);
+    };
+    electron.ipcRenderer.invoke("showOpenDialog",options).then((res)=>{
       console.log(res);
       if (!res) return;
-      if(res.canceled) return;
-      setState((state)=>({...state, filename: res.filePaths[0] }));
-      let content = fs.readFileSync(res.filePaths[0], { encoding: 'utf-8', flag: 'r' });
+      // if(res.canceled) return;
+      setState((state)=>({...state, filename: res[0] }));
+      let content = fs.readFileSync(res[0], { encoding: 'utf-8', flag: 'r' });
       setState((state)=>({...state, html: content, showPreview: 'flex' }));
-    }); 
+    }).catch((e)=>{
+      console.log(e);
+    })
+    // ipcRenderer.send("open", {
+    //     defaultPath: path.resolve('./css_examples'),
+    //     properties: ['openFile'],
+    //     filters: [{ name: '*.html', extensions: ['html'] }],
+    // });
+    // ipcRenderer.once('open_res', (e,res) => {
+    //   console.log(e);
+    //   console.log(res);
+    //   if (!res) return;
+    //   if(res.canceled) return;
+    //   setState((state)=>({...state, filename: res.filePaths[0] }));
+    //   let content = fs.readFileSync(res.filePaths[0], { encoding: 'utf-8', flag: 'r' });
+    //   setState((state)=>({...state, html: content, showPreview: 'flex' }));
+    // }); 
   };
   const animationEnd = el => {
     var animations = {
@@ -179,18 +194,30 @@ function HtmlEditor (props){
   };
 
   const save_as_click = () => {
-    ipcRenderer.send("save", {
+    var options ={
         defaultPath: path.resolve('./css_examples'),
         filters: [{ name: '*.html', extensions: ['html'] }],
-    });
-    ipcRenderer.once('save_res', (e,res) => {
-      console.log(e);
-      console.log(res);
+    };
+    electron.ipcRenderer.invoke("showSaveDialog",options).then((res)=>{
       if (!res) return;
-      if(res.canceled) return;
-      setState((state)=>({...state, filename: res.filePath }));
-      fs.writeFileSync(res.filePath, state.html);
-    }); 
+      setState((state)=>({...state, filename: res }));
+      fs.writeFileSync(res, state.html);
+    }).catch((e)=>{
+      console.log(e);
+    })
+
+    // ipcRenderer.send("save", {
+    //     defaultPath: path.resolve('./css_examples'),
+    //     filters: [{ name: '*.html', extensions: ['html'] }],
+    // });
+    // ipcRenderer.once('save_res', (e,res) => {
+    //   console.log(e);
+    //   console.log(res);
+    //   if (!res) return;
+    //   if(res.canceled) return;
+    //   setState((state)=>({...state, filename: res.filePath }));
+    //   fs.writeFileSync(res.filePath, state.html);
+    // }); 
   };
   const save_click = () => {
     if (state.filename != '') {
